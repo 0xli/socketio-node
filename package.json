@@ -15,7 +15,7 @@
     }
   ],
   "scripts": {
-    "start": "node server.js"
+    "start": "node room.js"
   },
   "main": "server.js",
   "repository": {
