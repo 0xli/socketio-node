@@ -55,7 +55,7 @@ io.on('connection', function(socket){
 })
 
 // run app
-let port = 3000;
+let port = 3003;
 let tlsPort = 3002;
 
 // http.listen(3000, function(){
