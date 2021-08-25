@@ -19,12 +19,19 @@
 <body>
 <img src="https://www.larvalabs.com/public/images/cryptopunks/punk0001.png" id="myicon" style="width: 78px">
 <label id="myname">My Id is:</label>
+<button onclick="disconnect()"  style="background: rgb(130,224,255);padding: 5px;border: aquamarine">Disconnect</button>
 <ul id="messages"></ul>
 <form action="">
     <input id="m" autocomplete="off" /><button>Send</button>
 </form>
 <script src="https://code.jquery.com/jquery-1.11.1.js" rel="external nofollow" ></script>
 <script>
+    var socket = io();
+
+    function disconnect() {
+        socket.close();
+        $('#messages').append($('<li>').text("Disconnect！Please reload the page to reconnect"));
+    }
     $(function () {
             var channel = "one101"// "myid+calleeid+callid";
             var sender = JSON.stringify(Math.round(Math.random() * 10000));
@@ -35,9 +42,11 @@
 
             console.log("myname is:" + sender);
 
-            var socket = io();
             socket.on('connectToRoom',function(msg){
                 $('#messages').append($('<li>').text(msg.sender+' just joined '+msg.channel));
+            });
+            socket.on('disconnectToRoom',function(msg){
+                $('#messages').append($('<li>').text(msg.sender+' just left '+msg.channel));
             });
             socket.on('connect',function(){
                 console.log("connect:");
