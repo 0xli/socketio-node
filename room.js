@@ -5,8 +5,8 @@ var fs = require('fs');
 var options = {
     // key: fs.readFileSync('cert/key.pem'),
     // cert: fs.readFileSync('cert/cert.pem')
-    // key: fs.readFileSync('/usr/local/nginx/certificates/callt.net/callt.net.key'),
-    // cert: fs.readFileSync('/usr/local/nginx/certificates/callt.net/fullchain.cer')
+    key: fs.readFileSync('/usr/local/nginx/certificates/callt.net/callt.net.key'),
+    cert: fs.readFileSync('/usr/local/nginx/certificates/callt.net/fullchain.cer')
 };
 
 const https = require('https');
@@ -45,8 +45,8 @@ io.on('connection', function(socket){
         console.log(room.sender+" join room channel:"+room.channel);
         //Send this event to everyone in the room.
         io.sockets.in(room.channel).emit('connectToRoom', room);
-        socket.on('disconnect', function (sender) {
-            console.log("leave:"+sender+socket.rooms);
+        socket.on('disconnect', function () {
+            console.log(room.sender+" leave channel:"+room.channel);
             io.sockets.in(room.channel).emit('disconnectToRoom', room);
             socket.leave();
         });
