@@ -37,22 +37,24 @@ app.get('/', function(req, res){
 });
 var roomno = 1;
 io.on('connection', function(socket){
+    var address = socket.handshake.address;
+    console.log('New connection from ' + address);
     socket.on('new-channel', function (room) {
         if (room==null || room.channel==null || room.sender==null){
-            console.log("new-channel parameter missed");
+            console.log(address+"->"+"new-channel parameter missed");
         }
         socket.join(room.channel);
-        console.log(room.sender+" join room channel:"+room.channel);
+        console.log(address+"->"+room.sender+" join room channel:"+room.channel);
         //Send this event to everyone in the room.
         io.sockets.in(room.channel).emit('connectToRoom', room);
         socket.on('disconnect', function () {
-            console.log(room.sender+" leave channel:"+room.channel);
+            console.log(address+"->"+room.sender+" leave channel:"+room.channel);
             io.sockets.in(room.channel).emit('disconnectToRoom', room);
             socket.leave();
         });
     });
     socket.on('message', function (data) {
-        console.log(" got message:"+data.data+" from "+ data.sender)
+        console.log(address+"->"+" got message:"+data.data+" from "+ data.sender)
         socket.broadcast.emit('message', data);
     });
 })
