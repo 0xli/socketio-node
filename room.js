@@ -5,8 +5,10 @@ var fs = require('fs');
 var options = {
     // key: fs.readFileSync('cert/key.pem'),
     // cert: fs.readFileSync('cert/cert.pem')
-    key: fs.readFileSync('/usr/local/nginx/certificates/callt.net/callt.net.key'),
-    cert: fs.readFileSync('/usr/local/nginx/certificates/callt.net/fullchain.cer')
+    // key: fs.readFileSync('/usr/local/nginx/certificates/callt.net/callt.net.key'),
+    // cert: fs.readFileSync('/usr/local/nginx/certificates/callt.net/fullchain.cer')
+    key: fs.readFileSync('/root/.acme.sh/allcomchina.com/allcomchina.com.key'),
+    cert: fs.readFileSync('/root/.acme.sh/allcomchina.com/fullchain.cer')
 };
 
 const https = require('https');
