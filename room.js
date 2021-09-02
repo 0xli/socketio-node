@@ -7,12 +7,14 @@ var options = {
     // cert: fs.readFileSync('cert/cert.pem')
     // key: fs.readFileSync('/usr/local/nginx/certificates/callt.net/callt.net.key'),
     // cert: fs.readFileSync('/usr/local/nginx/certificates/callt.net/fullchain.cer')
-    key: fs.readFileSync('/root/.acme.sh/allcomchina.com/allcomchina.com.key'),
-    cert: fs.readFileSync('/root/.acme.sh/allcomchina.com/fullchain.cer')
+    // key: fs.readFileSync('/root/.acme.sh/allcomchina.com/allcomchina.com.key'),
+    // cert: fs.readFileSync('/root/.acme.sh/allcomchina.com/fullchain.cer')
 };
 
 const https = require('https');
 const server = https.createServer(options, app);
+require("events").captureRejections = true;
+
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, DELETE');
@@ -32,6 +34,7 @@ if (options.cert)
             allowedHeaders: ["kademlia-header"],
             credentials: true
         },
+        allowEIO3: true,
         maxHttpBufferSize: 1e8
     });
 else
@@ -42,6 +45,7 @@ else
             allowedHeaders: ["kademlia-header"],
             credentials: true
         },
+        allowEIO3: true,
         maxHttpBufferSize: 1e8
     });
 
@@ -51,6 +55,9 @@ app.get('/', function(req, res){
 });
 var roomno = 1;
 io.on('connection', function(socket){
+    socket[Symbol.for('nodejs.rejection')] = (err) => {
+        socket.emit("error", err);
+    };
     var address = socket.handshake.address;
     console.log('New connection from ' + address);
     socket.on('new-channel', function (room) {
