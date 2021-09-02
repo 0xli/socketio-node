@@ -6,8 +6,8 @@ var fs = require('fs');
 var options = {
     // key: fs.readFileSync('cert/key.pem'),
     // cert: fs.readFileSync('cert/cert.pem')
-    key: fs.readFileSync('/usr/local/nginx/certificates/callt.net/callt.net.key'),
-    cert: fs.readFileSync('/usr/local/nginx/certificates/callt.net/fullchain.cer')
+    // key: fs.readFileSync('/usr/local/nginx/certificates/callt.net/callt.net.key'),
+    // cert: fs.readFileSync('/usr/local/nginx/certificates/callt.net/fullchain.cer')
     //ssl_certificate /usr/local/nginx/certificates/callt.net/fullchain.cer;
     //ssl_certificate_key /usr/local/nginx/certificates/callt.net/callt.net.key;
     // key: fs.readFileSync('/etc/letsencrypt/live/webrtcweb.com/privkey.pem'),

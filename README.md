@@ -15,6 +15,11 @@ This is the file that I was running on `https://webrtcweb.com:9559/`. I'll recom
 ```
 npm install socketio-over-nodejs
 ```
+# Test Sevrer is UP
+```
+curl "https://t.callt.net:3002/socket.io/?EIO=4&transport=polling"
+0{"sid":"E2rmTQF6gZmPak29AAAO","upgrades":["websocket"],"pingInterval":25000,"pingTimeout":20000}
+```
 
 # How to use?
 

@@ -26,10 +26,22 @@ app.use((req, res, next) => {
 var io;
 if (options.cert)
     io = require('socket.io')(server,{
+        cors: {
+            origin: "*",
+            methods: ["GET", "POST"],
+            allowedHeaders: ["kademlia-header"],
+            credentials: true
+        },
         maxHttpBufferSize: 1e8
     });
 else
     io = require('socket.io')(http,{
+        cors: {
+            origin: "*",
+            methods: ["GET", "POST"],
+            allowedHeaders: ["kademlia-header"],
+            credentials: true
+        },
         maxHttpBufferSize: 1e8
     });
 

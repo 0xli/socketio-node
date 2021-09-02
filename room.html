@@ -14,6 +14,8 @@
     </style>
 </head>
 <script src="/socket.io/socket.io.js"></script>
+<!--<script src="https://callt.net:3002/socket.io/socket.io.js"></script>-->
+<!--<script src="node_modules/socket.io/client-dist/socket.io.js"></script>-->
 <script>
 </script>
 <body>
@@ -26,7 +28,13 @@
 </form>
 <script src="https://code.jquery.com/jquery-1.11.1.js" rel="external nofollow" ></script>
 <script>
-    var socket = io();
+   var socket = io("https://callt.net:3002",{
+       // withCredentials: true,
+       extraHeaders: {
+           // "kademlia-header": "abcd"
+       }
+   });
+    // var socket = io("http://localhost:3003");
 
     function disconnect() {
         socket.close();
