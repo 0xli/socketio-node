@@ -5,8 +5,8 @@ var fs = require('fs');
 var options = {
     // key: fs.readFileSync('cert/key.pem'),
     // cert: fs.readFileSync('cert/cert.pem')
-    // key: fs.readFileSync('/usr/local/nginx/certificates/callt.net/callt.net.key'),
-    // cert: fs.readFileSync('/usr/local/nginx/certificates/callt.net/fullchain.cer')
+    key: fs.readFileSync('/usr/local/nginx/certificates/callt.net/callt.net.key'),
+    cert: fs.readFileSync('/usr/local/nginx/certificates/callt.net/fullchain.cer')
     // key: fs.readFileSync('/root/.acme.sh/allcomchina.com/allcomchina.com.key'),
     // cert: fs.readFileSync('/root/.acme.sh/allcomchina.com/fullchain.cer')
 };
@@ -73,10 +73,11 @@ io.on('connection', function(socket){
             io.sockets.in(room.channel).emit('disconnectToRoom', room);
             socket.leave();
         });
-    });
-    socket.on('message', function (data) {
-        console.log(address+"->"+" got message:"+data.data+" from "+ data.sender)
-        socket.broadcast.emit('message', data);
+        socket.on('message', function (data) {
+            console.log(address+"->"+" got message:"+data.data+" from "+ data.sender)
+//        socket.broadcast.emit('message', data);
+            io.sockets.in(room.channel).emit('message', data);
+        });
     });
 })
 
