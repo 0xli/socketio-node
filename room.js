@@ -75,8 +75,12 @@ io.on('connection', function(socket){
         });
         socket.on('message', function (data) {
             console.log(address+"->"+" got message:"+data.data+" from "+ data.sender)
-//        socket.broadcast.emit('message', data);
-            io.sockets.in(room.channel).emit('message', data);
+            // sending to all clients in 'game' room(channel) except sender
+            io.broadcast.to(room.channel).emit('message', data);
+            // sending to all clients except sender
+            //        socket.broadcast.emit('message', data);
+            // sending to all clients in 'game' room(channel), include sender
+            // io.sockets.in(room.channel).emit('message', data);
         });
     });
 })
