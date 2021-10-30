@@ -22,31 +22,36 @@
 <img src="https://www.larvalabs.com/public/images/cryptopunks/punk0001.png" id="myicon" style="width: 78px;background: khaki">
 <label id="myname">My Id is:</label>
 <button onclick="disconnect()"  style="background: rgb(130,224,255);padding: 5px;border: aquamarine">Disconnect</button>
+<label id="myroom">in channel:</label>
 <ul id="messages"></ul>
 <form action="">
     <input id="m" autocomplete="off" /><button>Send</button>
 </form>
 <script src="https://code.jquery.com/jquery-1.11.1.js" rel="external nofollow" ></script>
 <script>
-   // var socket = io("https://callt.net:3002",{
-   //     // log: true,
-   //     reconnects: true,
-   //     withCredentials: false,
-   //     extraHeaders: {
-   //         // "kademlia-header": "abcd"
-   //     }
-   // });
-    var socket = io("http://localhost:3003");
+    const host = "https://callt.net:3002";
+//    const host = "https://allcomchina.com:3002";
+//    const host = "http://localhost:3003";
+   var socket = io(host,{
+       // log: true,
+       reconnects: true,
+       withCredentials: false,
+       extraHeaders: {
+           // "kademlia-header": "abcd"
+       }
+   });
+    // var socket = io("http://localhost:3003");
 
     function disconnect() {
         socket.close();
-        $('#messages').append($('<li>').text("Disconnect！Please reload the page to reconnect"));
+        $('#messages').append($('<li>').text("Disconnect! Please reload the page to reconnect"));
     }
     $(function () {
             var channel = "one101"// "myid+calleeid+callid";
             var sender = JSON.stringify(Math.round(Math.random() * 10000));
             if (sender.length < 4) sender = '0' + sender;
             $('#myname').append(sender);
+            $('#myroom').append(channel);
             var ic = document.getElementById('myicon');
             ic.src = 'https://www.larvalabs.com/public/images/cryptopunks/punk' + sender + '.png';
 

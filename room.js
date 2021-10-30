@@ -5,8 +5,8 @@ var fs = require('fs');
 var options = {
     // key: fs.readFileSync('cert/key.pem'),
     // cert: fs.readFileSync('cert/cert.pem')
-    key: fs.readFileSync('/usr/local/nginx/certificates/callt.net/callt.net.key'),
-    cert: fs.readFileSync('/usr/local/nginx/certificates/callt.net/fullchain.cer')
+    // key: fs.readFileSync('/usr/local/nginx/certificates/callt.net/callt.net.key'),
+    // cert: fs.readFileSync('/usr/local/nginx/certificates/callt.net/fullchain.cer')
     // key: fs.readFileSync('/root/.acme.sh/allcomchina.com/allcomchina.com.key'),
     // cert: fs.readFileSync('/root/.acme.sh/allcomchina.com/fullchain.cer')
 };
@@ -68,15 +68,24 @@ io.on('connection', function(socket){
         console.log(address+"->"+room.sender+" join room channel:"+room.channel);
         //Send this event to everyone in the room.
         io.sockets.in(room.channel).emit('connectToRoom', room);
-        socket.on('disconnect', function () {
-            console.log(address+"->"+room.sender+" leave channel:"+room.channel);
-            io.sockets.in(room.channel).emit('disconnectToRoom', room);
-            socket.leave();
+        socket.on('disconnect', function (reason) {
+            console.log(address+"->"+room.sender+" leave channel:"+room.channel+":"+reason);
+            socket.leave(room.channel,()=>{
+                io.sockets.in(room.channel).emit('disconnectToRoom', room);
+                socket.disconnect(true);
+                console.log(address+"->"+room.sender+" left channel:"+room.channel);
+            });
         });
         socket.on('message', function (data) {
             console.log(address+"->"+" got message:"+data.data+" from "+ data.sender)
 //        socket.broadcast.emit('message', data);
             io.sockets.in(room.channel).emit('message', data);
+        });
+        socket.on('error', (error) => {
+            console.log(address+": error:"+JSON.stringify(error));
+        });
+        socket.on('disconnecting', (reason) => {
+            console.log(address+": disconnecting:"+JSON.stringify(reason));
         });
     });
 })
