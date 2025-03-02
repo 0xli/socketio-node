@@ -144,3 +144,48 @@ testChannelPresence('default-channel');
 # License
 
 [Socket.io over Node.js](https://github.com/muaz-khan/WebRTC-Experiment/blob/master/socketio-over-nodejs) is released under [MIT licence](https://www.webrtc-experiment.com/licence/) . Copyright (c) [Muaz Khan](https://MuazKhan.com).
+
+# deploy
+```
+server {
+    listen 80;
+    listen 443 ssl;
+    server_name app.callt.net;
+
+    # SSL configuration (if using HTTPS)
+    ssl_certificate /path/to/your/certificate.crt;
+    ssl_certificate_key /path/to/your/private.key;
+    
+    # Other standard SSL settings...
+
+    location /socket.io/ {
+        proxy_pass http://localhost:3003; # Your actual socket.io server address
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        # WebSocket specific settings
+        proxy_buffering off;
+        proxy_read_timeout 86400; # 24 hours
+        proxy_send_timeout 86400; # 24 hours
+        proxy_connect_timeout 7d;
+        
+        # Handle socket.io path
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    # Your other app locations and configurations
+    location / {
+        proxy_pass http://localhost:3000; # Your Next.js app
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
