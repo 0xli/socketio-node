@@ -29,7 +29,9 @@
 </form>
 <script src="https://code.jquery.com/jquery-1.11.1.js" rel="external nofollow" ></script>
 <script>
-    const host = "https://callt.net:3002";
+    // Dynamically determine host based on current location
+    const host = window.location.origin;
+    // const host = "https://callt.net:3002";
 //    const host = "https://allcomchina.com:3002";
 //    const host = "http://localhost:3003";
    var socket = io(host,{
@@ -75,17 +77,21 @@
                 socket.on('message', function(msg){
                     $('#messages').append($('<li>').text(msg.sender+":"+msg.data));
                 });
-                //3. 发送消息
-                socket.send = function (message) {
-                    socket.emit('message', {
-                        sender: sender,
-                        data: message
-                    });
-                };
-
+                //3. 发送消息 - fix this part
+                // Don't override socket.send, create a custom sendMessage function instead
             });
+
+            // Create a separate sendMessage function instead of overriding socket.send
+            function sendMessage(message) {
+                socket.emit('message', {
+                    sender: sender,
+                    data: message
+                });
+            }
+
             $('form').submit(function(){
-                socket.send($('#m').val());
+                // Use the new sendMessage function instead of socket.send
+                sendMessage($('#m').val());
                 $('#m').val('');
                 return false;
             });
