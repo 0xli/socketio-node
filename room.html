@@ -34,8 +34,8 @@
     // const host = "https://callt.net:3002";
 //    const host = "https://allcomchina.com:3002";
 //    const host = "http://localhost:3003";
-   var socket = io(host,{
-       // log: true,
+   var socket = io(host, {
+       transports: ['websocket', 'polling'],  // Try WebSocket first, fallback to polling
        reconnects: true,
        withCredentials: false,
        extraHeaders: {
