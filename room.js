@@ -48,6 +48,12 @@ else
         maxHttpBufferSize: 1e8
     });
 
+// Add timestamp logging function
+function logWithTimestamp(message) {
+    const now = new Date();
+    const timestamp = now.toISOString(); // ISO format: YYYY-MM-DDTHH:mm:ss.sssZ
+    console.log(`[${timestamp}] ${message}`);
+}
 
 app.get('/', function(req, res){
     res.sendFile(__dirname +'/room.html');
@@ -58,24 +64,24 @@ io.on('connection', function(socket){
         socket.emit("error", err);
     };
     var address = socket.handshake.address;
-    console.log('New connection from ' + address);
+    logWithTimestamp('New connection from ' + address);
     socket.on('new-channel', function (room) {
         if (room==null || room.channel==null || room.sender==null){
-            console.log(address+"->"+"new-channel parameter missed");
+            logWithTimestamp(address+"->"+"new-channel parameter missed");
         }
         socket.join(room.channel);
-        console.log(address+"->"+room.sender+" join room channel:"+room.channel);
+        logWithTimestamp(address+"->"+room.sender+" join room channel:"+room.channel);
         //Send this event to everyone in the room.
         io.sockets.in(room.channel).emit('connectToRoom', room);
         socket.on('disconnect', function (reason) {
-            console.log(address+"->"+room.sender+" leave channel:"+room.channel+":"+reason);
+            logWithTimestamp(address+"->"+room.sender+" leave channel:"+room.channel+":"+reason);
             socket.leave(room.channel);
             io.sockets.in(room.channel).emit('disconnectToRoom', room);
             socket.disconnect(true);
-            console.log(address+"->"+room.sender+" left channel:"+room.channel);
+            logWithTimestamp(address+"->"+room.sender+" left channel:"+room.channel);
         });
         socket.on('message', function (data) {
-            console.log(address+"->"+" got message:"+data.data+" from "+ data.sender)
+            logWithTimestamp(address+"->"+" got message:"+data.data+" from "+ data.sender);
             // sending to all clients in 'game' room(channel) except sender
             socket.broadcast.to(room.channel).emit('message', data);
             // sending to all clients except sender
@@ -84,10 +90,10 @@ io.on('connection', function(socket){
             // io.sockets.in(room.channel).emit('message', data);
         });
         socket.on('error', (error) => {
-            console.log(address+": error:"+JSON.stringify(error));
+            logWithTimestamp(address+": error:"+JSON.stringify(error));
         });
         socket.on('disconnecting', (reason) => {
-            console.log(address+": disconnecting:"+JSON.stringify(reason));
+            logWithTimestamp(address+": disconnecting:"+JSON.stringify(reason));
         });
     });
 })
@@ -102,12 +108,12 @@ let tlsPort = 3002;
 
 if (options.cert){
     server.listen(tlsPort);
-    console.log(`https started and listenting on port ${tlsPort}`);
+    logWithTimestamp(`https started and listening on port ${tlsPort}`);
 }
 else {
-    console.log(`started and listenting on port ${port}`);
+    logWithTimestamp(`started and listening on port ${port}`);
     http.listen(port, function(){
-        console.log('http listening on *: ${port}');
+        logWithTimestamp(`http listening on *: ${port}`);
     });
 }
 
