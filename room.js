@@ -25,27 +25,26 @@ app.use((req, res, next) => {
         next();
     }
 });
+const { Server } = require("socket.io");
 var io;
 if (options.cert)
-    io = require('socket.io')(server,{
+    io = new Server(server, {
         cors: {
             origin: "*",
             methods: ["GET", "POST"],
             allowedHeaders: ["kademlia-header"],
             credentials: true
         },
-        allowEIO3: true,
         maxHttpBufferSize: 1e8
     });
 else
-    io = require('socket.io')(http,{
+    io = new Server(http, {
         cors: {
             origin: "*",
             methods: ["GET", "POST"],
             allowedHeaders: ["kademlia-header"],
             credentials: true
         },
-        allowEIO3: true,
         maxHttpBufferSize: 1e8
     });
 
@@ -70,11 +69,10 @@ io.on('connection', function(socket){
         io.sockets.in(room.channel).emit('connectToRoom', room);
         socket.on('disconnect', function (reason) {
             console.log(address+"->"+room.sender+" leave channel:"+room.channel+":"+reason);
-            socket.leave(room.channel,()=>{
-                io.sockets.in(room.channel).emit('disconnectToRoom', room);
-                socket.disconnect(true);
-                console.log(address+"->"+room.sender+" left channel:"+room.channel);
-            });
+            socket.leave(room.channel);
+            io.sockets.in(room.channel).emit('disconnectToRoom', room);
+            socket.disconnect(true);
+            console.log(address+"->"+room.sender+" left channel:"+room.channel);
         });
         socket.on('message', function (data) {
             console.log(address+"->"+" got message:"+data.data+" from "+ data.sender)
