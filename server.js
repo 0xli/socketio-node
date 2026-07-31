@@ -64,23 +64,39 @@ var io = require('socket.io')(http,{
 //     'jsonp-polling'
 // ]);
 //
+// Which channels currently have someone in them. Answers `presence`.
 var channels = {};
+
+// Which channels already have handlers wired onto them. Separate from
+// `channels`, and never cleared.
+//
+// io.of(name) creates a Socket.IO namespace that lives for the life of the
+// process — there is no API to remove one. Tracking only `channels`, deleting
+// the entry on disconnect, and re-running onNewNamespace when the channel came
+// back meant the namespace was still there and got ANOTHER set of handlers
+// each round. A single event then fans out to N duplicates, each of which also
+// logs. Measured: 8 reconnects of one channel left 8 connection listeners.
+//
+// The namespace cannot be reclaimed, so wiring is made idempotent instead.
+var wired = new Set();
+
+// Room bookkeeping and per-message logs are chatty and say nothing an operator
+// acts on. DEBUG_ROOMS=1 brings them back.
+var debugRooms = process.env.DEBUG_ROOMS === '1';
 
 io.sockets.on('connection', function (socket) {
     var initiatorChannel = '';
-    if (!io.isConnected) {
-        io.isConnected = true;
-    }
 
     socket.on('new-channel', function (data) {
-        if (!channels[data.channel]) {
-            initiatorChannel = data.channel;
+        if (!wired.has(data.channel)) {
+            wired.add(data.channel);
             onNewNamespace(data.channel, data.sender);
         }
-
-        console.log('new-channel: '+data.channel)
+        if (!channels[data.channel]) {
+            initiatorChannel = data.channel;
+        }
+        if (debugRooms) console.log('new-channel: ' + data.channel);
         channels[data.channel] = data.channel;
-//        onNewNamespace(data.channel, data.sender);
     });
 
     socket.on('presence', function (channel) {
@@ -89,42 +105,44 @@ io.sockets.on('connection', function (socket) {
     });
 
     socket.on('disconnect', function (channel) {
+        // Only presence goes. `wired` must survive, or the next client on this
+        // channel re-registers every handler again.
         if (initiatorChannel) {
             delete channels[initiatorChannel];
         }
     });
 });
 
-io.of("/").adapter.on("create-room", (room) => {
-    console.log(`room ${room} was created`);
-});
+if (debugRooms) {
+    io.of("/").adapter.on("create-room", (room) => {
+        console.log(`room ${room} was created`);
+    });
+    io.of("/").adapter.on("join-room", (room, id) => {
+        console.log(`socket ${id} has joined room ${room}`);
+    });
+}
 
-io.of("/").adapter.on("join-room", (room, id) => {
-    console.log(`socket ${id} has joined room ${room}`);
-});
-io.of("/").adapter.on("message", (room, id) => {
-    console.log(`socket ${id} has joined room ${room}`);
-});
 function onNewNamespace(channel, sender) {
-    io.of("/"+channel).adapter.on("create-room", (room) => {
-        console.log(`${channel}:${sender}:$$$room ${room} was created`);
-    });
-
-    io.of("/"+channel).adapter.on("join-room", (room, id) => {
-        console.log(`${channel}:${sender}:$$$socket ${id} has joined room ${room}`);
-    });
-    io.of("/"+channel).adapter.on("message", (room, id) => {
-        console.log(`${channel}:${sender}:$$$socket ${id} has got message ${room}`);
-    });
+    if (debugRooms) {
+        io.of("/"+channel).adapter.on("create-room", (room) => {
+            console.log(`${channel}:${sender}:$$$room ${room} was created`);
+        });
+        io.of("/"+channel).adapter.on("join-room", (room, id) => {
+            console.log(`${channel}:${sender}:$$$socket ${id} has joined room ${room}`);
+        });
+    }
     io.of('/' + channel).on('connection', function (socket) {
         var username;
-        if (io.isConnected) {
-            io.isConnected = false;
-//            socket.emit('connect', true);
-        }
 
         socket.on('message', function (data) {
-            console.log(sender+" got message:"+data.data+" from "+ data.sender)
+            // Size, never the payload: these carry WebRTC SDP and ICE, and
+            // maxHttpBufferSize allows 100MB. The old log was a string concat
+            // plus a synchronous stdout write per signalling message, on the
+            // hot path, multiplied by every duplicate handler above.
+            if (debugRooms) {
+                var size = data && data.data ? String(data.data).length : 0;
+                console.log(`${sender} got message from ${data && data.sender} (${size}B)`);
+            }
             socket.broadcast.emit('message', data);
             // if (data.sender == sender) {
             //     if(!username) username = data.data.sender;
