@@ -71,8 +71,19 @@ io.on('connection', function(socket){
         }
         socket.join(room.channel);
         logWithTimestamp(address+"->"+room.sender+" join room channel:"+room.channel);
+        // Occupancy of the room the joiner has just entered. A callee woken by
+        // a delayed VoIP push needs this: if it answers and finds itself alone,
+        // the caller has already given up, and it should end quietly instead of
+        // waiting for a connection that cannot come and then notifying a peer
+        // that is no longer there.
+        //
+        // Sent as a STRING on purpose. The iOS client decodes this payload as
+        // [String: String]; a numeric value fails that cast outright and would
+        // silently break room joins on every build already in the wild.
+        var occupants = io.sockets.adapter.rooms.get(room.channel);
+        var peers = occupants ? occupants.size : 1;
         //Send this event to everyone in the room.
-        io.sockets.in(room.channel).emit('connectToRoom', room);
+        io.sockets.in(room.channel).emit('connectToRoom', Object.assign({}, room, { peers: String(peers) }));
         socket.on('disconnect', function (reason) {
             logWithTimestamp(address+"->"+room.sender+" leave channel:"+room.channel+":"+reason);
             socket.leave(room.channel);
